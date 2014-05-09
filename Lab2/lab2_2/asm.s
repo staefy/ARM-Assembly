@@ -78,7 +78,11 @@ main
 	LDR R0, =PIOB_OWER	;Sync write to ODSR enabled on 3 bits
 	STR R1, [R0]
 	
-	B	main_loop
+	LDR R0, =PIOB_ODSR	;Sync write to ODSR enabled on 3 bits
+	MOV R1, #3
+	STR R1, [R0]
+	B	led_flow	;Branch to either led_flow or main_loop
+				;dependent on which lab assignemnt
 ;===========================================================================
 ; Subroutine that takes R7 cotnaining one value between 0 and 7
 led	PUSH	{R0-R3,R7,LR}
@@ -90,72 +94,57 @@ led	PUSH	{R0-R3,R7,LR}
 	ORR R2, R2, R7		; now in r2 we should have total
 	STR R2, [R0]
 	
-	POP	{R0-R3,R7, LR}
+	POP	{R0-R3,R7,LR}
 	BX	LR
 
 
 ;===========================================================================
-; Subroutine that makes flowing light right or left dependenet on R7 and R8
-led_flow	
-	PUSH	{R0-R3,R7,LR}
-	
+; Main that makes flowing light right or left dependenet on R7 and R8
+led_flow
+	BL	check_buttons	;Leaves us with R7, R8 one and&or zero
 	CMP	R7, #1
-	BNE	right_off
+	BNE	right_off	;This means either none or only left
 	CMP	R8, #1
-	BEQ	both_on
+	BEQ	both_on		;this means both buttons had 1 and we flash all
 	
-	LDR R0, =PIOB_ODSR
-	LDR R2,	[R0]		;fetch whats in the register now
-	LSL R2, R2, #1
-	CMP R2, #8
-	BNE set_led
-	MOV R2, #1
-	B set_led
+only_right
 	
-	
+	LDR R0, =PIOB_ODSR	;Only right button pressed if we get here
+	LDR R7,	[R0]
+	EOR R7, R7, #3
+	LSL R7, R7, #1
+	CMP R7, #0		;if value is 8 it should be 1, rotated
+	BNE to_led
+	MOV R7, #1
+to_led	BL led
+	B delay
 	
 right_off
 	CMP	R8, #1
-	BNE	both_off
-only_right	
+	BNE	both_off	; if only left it continues downard
+only_left	
 	LDR R0, =PIOB_ODSR
-	LDR R2,	[R0]		;fetch whats in the register now
-	LSR R2, R2, #1
-	CMP R2, #0
-	BNE set_led
-	MOV R2, #4
-	B set_led
+	LDR R7,	[R0]
+	EOR R7, R7, #3
+	LSR R7, R7, #1
+	CMP R7, #0
+	BNE to_led
+	MOV R7, #4
+	BL led
+	B delay
 
 both_on
-	MOV R2, #7
-	B set_led
+	MOV R7, #7
+	BL to_led
 
 both_off
-	MOV R2, #0
-set_led	
-	LDR R0, =PIOB_SODR
-	LDR R1, =PIOB_CODR
-	STR R2, [R0]
-	EOR R2, R2, #7
-	STR R2, [R1]
+	MOV R7, #0
+	BL	to_led
 	
+delay	MOV	R7, #200	;Delay so lights doesnt change too quickly
+	BL	Delay_ms
 
-	POP	{R0-R3,R7, LR}
-	BX	LR
-	
-	
-	
-	
-	
-	EOR	R7, R7, #3	;after this we have a 1 repr. light
-	
-	LDR R0, =PIOB_ODSR
-	LDR R2,	[R0]		;fetch whats in the register now
-	BIC R2, R2, #7
-	ORR R2, R2, R7		; now in r2 we should have total
-	STR R2, [R0]
-	
-
+	B	led_flow
 
 
 
@@ -179,7 +168,7 @@ check_buttons
 	BX	LR
 
 ;===========================================================================
-; Main program
+; Main program for lab 2_2 where one button lights all and another turns off
 main_loop
 	;1 Read input values from buttons, get r7 r8 registers with output
 	MOV	R7, #0		;clear R7 R8
@@ -196,9 +185,6 @@ Else:	CMP	R8, #1
 	MOV	R7, #0
 	BL	led
 Endif:	B	main_loop
-
-;	LDR	R7,=1000
-;	BL	Delay_ms
 
 ; ========================
 ; Subroutine Delay_ms
