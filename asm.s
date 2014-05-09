@@ -1,10 +1,12 @@
-InitialStackPointer     EQU     0x20080000
-Reserved                EQU     0x00      
-
-	NAME    main
-	PUBLIC  __iar_program_start
-	SECTION .text : CODE (2)
-	THUMB
+InitialStackPointer 	EQU	0x20008000
+	  NAME    InterruptVectors
+	  PUBLIC	__iar_program_start
+	  SECTION .intvec : CODE (2)
+	  THUMB
+	  DATA    
+__vector_table        
+	  DCD     InitialStackPointer
+	  DCD     __iar_program_start
 
 __iar_program_start
 ; SAM3X8E - On arduino due definitions
@@ -81,46 +83,83 @@ PIOC_SODR EQU   0x400E1230
 PIOC_CODR EQU   0x400E1234
 PIOC_ODSR EQU   0x400E1238
 ;===========================================================================
+; Peripheral clock enable disable and status Registers
+PMC_PCER EQU   0x400E0410 ; Peripheral Clock Enable Register 
+PMC_PCDR EQU   0x400E0414 ; Peripheral Clock Disable Register
+PMC_PCSR EQU   0x400E0418 ; Peripheral Clock Status Register
 
-MCLK	  EQU	48000          ; Anges i kHz
+MCLK	EQU	48000          ; in Khz, used  for clock
 
-PMC_PCER  EQU   0x400E0410 ; Peripheral Clock Enable Register 
-PMC_PCDR  EQU   0x400E0414 ; Peripheral Clock Disable Register
-PMC_PCSR  EQU   0x400E0418 ; Peripheral Clock Status Register
-
-	B       main
-
-
+	  B       main
+;==================Declaration complete, now init starts=====================
 	SECTION .text : CODE (2)
 	THUMB
 
-main    NOP
+main	NOP
+
 ;===========================================================================
 ; Initialization of Peripheral Clock
-	LDR   R0,=PMC_PCER
-	LDR   R1,=0XC00
-	STR   R1,[R0]
-
-; Initialization InPort  
-;InPort  NOT NEEDED BECAUSE BUTTONS ARE ON BY DEFAULT
-
+	LDR	R0,=PMC_PCER
+	MOV	R1, #0XC00
+	STR	R1,[R0]
 ;===========================================================================
-; Initialization OutPort
-	LDR   R0,=PIOB_PER
-	LDR   R1,=0X08000000	;Pin enable
-	STR   R1,[R0]
+; Initialization InPort on arduino pin 7, 
+	LDR	R0, =PIOC_PER
+	LDR	R1, =0x1000000	;LDR because number is too large i think
+	STR	R1, [R0]
 
-	LDR   R0,=PIOB_OER     ;Output enable
-	LDR   R1,=0X08000000 
-	STR   R1,[R0]
-
-	LDR   R0,=PIOB_PUDR   ;Pullup disable
-	LDR   R1,=0X08000000
-	STR   R1,[R0]
-	B     read
+	LDR	R0, =PIOC_ODR
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOC_PUER
+	STR	R1, [R0]
 ;===========================================================================
-; Turn LED off 
-; TODO: Write your code here
+; Initialization OutPort on arduino pin 13
+	LDR	R0,=PIOB_PER
+	LDR	R1,=0X08000000	;Pin enable
+	STR	R1,[R0]
+
+	LDR	R0,=PIOB_OER     ;Output enable 
+	STR	R1,[R0]
+
+	LDR	R0,=PIOB_PUDR   ;Pullup disable
+	STR	R1,[R0]
+	
+	
+	LDR R1, =PIOB_SODR  ;remove this line when you see it used fo uppg 4
+	
+	
+	B	read
+	
+;===========Init complete, now subroutine declarations start================
+	
+	
+;===========================================================================
+; Subroutine to turn LED on
+
+led_off	PUSH	{R0-R1}
+	
+	LDR	R0, =PIOB_SODR
+	LDR	R1, =0x08000000
+	STR	R1, [R0]	;Turn off on
+	
+	POP	{R0-R1}
+	
+	BX	LR		;Return to value in LR
+	
+;===========================================================================
+; Subroutine to turn led off
+
+led_on	PUSH	{R0-R1}
+	LDR	R0,=PIOB_CODR   
+	LDR	R1,=0X08000000
+	STR	R1,[R0]
+	POP	{R0-R1}
+	BX	LR
+
+
+
+
 
 ;===========================================================================
 ; Subroutine Read_p0
@@ -137,16 +176,15 @@ main    NOP
 ;     CMP    R0,#0              ; Set Z-flag according to button press
 ;     BNZ	 ButtonPressed      ; Jump if button pressed
 Read_p0
-	STMFD   SP!,{R1}
+	  STMFD   SP!,{R1}
 
 ; LDR    	R1,=PIOA_PDSR
 ; LDR   	R0,[R1]
 ;  AND     R0,R0,#0x00080000  ; bit mask to get button
 
-	LDMFD   SP!,{R1}        
-	MOV     PC,LR            ; Return
+	  LDMFD   SP!,{R1}        
+	  MOV     PC,LR            ; Return
 ;===========================================================================
-; ========================
 ; Subroutine Delay_ms
 ;
 ; Purpose: Wait for the number of ms given by R7
@@ -179,28 +217,33 @@ loop_ms
 
 	LDMFD   SP!,{R0,R1}     ; Restore registers 
 	MOV     PC,LR           ; Return   
-; --------------------------------------------------------
+	
+avbrott	
+	LDR R0,=PIOB_SODR 
+	MOV R7,#0 
+	STRb R7,[R0] ; PIOB_SODR 
+	EOR R7,R7,#0xFF 
+	STRb R7,[R0,#4] ; PIOB_CODR 
+	
+	MOV PC, LR ; återgång från avbrott. 
+
+;=========Subroutines declaration complete, now main starts================
 ; Main program
-read 
-	BL Read_p0 
-	CMP R0, #0 ; Ej tryckt => 1:a 
 
-	LDR   R0,=PIOB_SODR   ;light led
-	LDR   R1,=0X08000000
-	STR   R1,[R0]
-
-	LDR   R0,=PIOB_CODR   ;light led
-	LDR   R1,=0X08000000
-	STR   R1,[R0]
-
-
-	BNE read 
-	LDR R7,=1000 
-	MOV     R0, #0x66666666
-	MOV     R1, #0x77777777
-	BL Delay_ms 
-
-loop 
-	B loop  
+read	LDRb R7,[R1,#8] ; PIOB_ODSR
+	PUSH {R7}
+	;Interrupt simulation
+	CMP R5, #2
+	MOV	LR, PC
+	BEQ	avbrott
+	
+	
+	ADD R7,R7, #1 
+	STRb R7,[R1] ; PIOB_SODR 
+	EOR R7,R7,#0xFF 
+	STRb R7,[R1,#4] ; PIOB_CODR  	
+	;BL Delay_ms 
+	B read
+loop 	B loop  
 
 	END

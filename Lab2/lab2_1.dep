@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>1932907234</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\config\linker\Atmel\SAM3U\SAM3U-EK\sam3u4-sram.icf</file>
+      <file>$PROJ_DIR$\sam3u_ek_init.inc</file>
+      <file>$PROJ_DIR$\vector_table.inc</file>
+      <file>$PROJ_DIR$\sam3u_ek_init.s</file>
+      <file>$PROJ_DIR$\Debug\Obj\exceptions.o</file>
+      <file>$PROJ_DIR$\vector_table.s</file>
+      <file>$PROJ_DIR$\Debug\Obj\asm.o</file>
+      <file>$PROJ_DIR$\Debug\Obj\vector_table.o</file>
+      <file>$PROJ_DIR$\asm.s</file>
+      <file>$PROJ_DIR$\Debug\Exe\asm.out</file>
+      <file>$PROJ_DIR$\Debug\Obj\sam3u_ek_init.o</file>
+      <file>$PROJ_DIR$\exceptions.s</file>
+    </outputs>
+    <file>
+      <name>$PROJ_DIR$\sam3u_ek_init.s</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 10</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 1</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\vector_table.s</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 7</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 2</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\asm.s</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 6</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\asm.out</name>
+      <inputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 0 6 4 10 7</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\exceptions.s</name>
+      <outputs>
+        <tool>
+          <name>AARM</name>
+          <file> 4</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\..\..\[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>ILINK</name>
+          <file> 9</file>
+        </tool>
+      </outputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>ILINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

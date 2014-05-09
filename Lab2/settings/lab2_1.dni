@@ -33,7 +33,9 @@ Stop=1
 Freq=10000000
 MultiCoreRunAll=1
 [DebugChecksum]
-Checksum=-323553029
+Checksum=2093484007
+[JLinkDriver]
+CStepIntDis=_ 0
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -41,8 +43,6 @@ StopOnThrow=_ 0
 ShowArgs=0
 [Disassembly]
 MixedMode=1
-[JLinkDriver]
-CStepIntDis=_ 0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -61,7 +61,7 @@ Exclusions=
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\asm.s}.236.1" 0 0 1 "" 0 "" 0
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\asm.s}.161.1" 0 0 1 "" 0 "" 0
 Count=1
 [Aliases]
 Count=0

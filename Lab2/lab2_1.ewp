@@ -99,7 +99,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>SAM3X8E	Atmel SAM3X8E</state>
+          <state>AT91SAM3U4	Atmel AT91SAM3U4</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -313,7 +313,7 @@
         </option>
         <option>
           <name>IInterwork2</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IProcessorMode2</name>
@@ -589,7 +589,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>arduino_due_template.srec</state>
+          <state>5.srec</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -707,7 +707,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$TOOLKIT_DIR$\config\linker\Atmel\SAM3X\SAM3X-EK\sam3x8-sram.icf</state>
+          <state>$TOOLKIT_DIR$\config\linker\Atmel\SAM3U\SAM3U-EK\sam3u4-sram.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1878,6 +1878,15 @@
   </configuration>
   <file>
     <name>$PROJ_DIR$\asm.s</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\exceptions.s</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\sam3u_ek_init.s</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\vector_table.s</name>
   </file>
 </project>
 
