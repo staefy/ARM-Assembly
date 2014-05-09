@@ -93,6 +93,73 @@ led	PUSH	{R0-R3,R7,LR}
 	POP	{R0-R3,R7, LR}
 	BX	LR
 
+
+;===========================================================================
+; Subroutine that makes flowing light right or left dependenet on R7 and R8
+led_flow	
+	PUSH	{R0-R3,R7,LR}
+	
+	CMP	R7, #1
+	BNE	right_off
+	CMP	R8, #1
+	BEQ	both_on
+	
+	LDR R0, =PIOB_ODSR
+	LDR R2,	[R0]		;fetch whats in the register now
+	LSL R2, R2, #1
+	CMP R2, #8
+	BNE set_led
+	MOV R2, #1
+	B set_led
+	
+	
+	
+right_off
+	CMP	R8, #1
+	BNE	both_off
+only_right	
+	LDR R0, =PIOB_ODSR
+	LDR R2,	[R0]		;fetch whats in the register now
+	LSR R2, R2, #1
+	CMP R2, #0
+	BNE set_led
+	MOV R2, #4
+	B set_led
+
+both_on
+	MOV R2, #7
+	B set_led
+
+both_off
+	MOV R2, #0
+set_led	
+	LDR R0, =PIOB_SODR
+	LDR R1, =PIOB_CODR
+	STR R2, [R0]
+	EOR R2, R2, #7
+	STR R2, [R1]
+	
+
+	POP	{R0-R3,R7, LR}
+	BX	LR
+	
+	
+	
+	
+	
+	EOR	R7, R7, #3	;after this we have a 1 repr. light
+	
+	LDR R0, =PIOB_ODSR
+	LDR R2,	[R0]		;fetch whats in the register now
+	BIC R2, R2, #7
+	ORR R2, R2, R7		; now in r2 we should have total
+	STR R2, [R0]
+	
+
+
+
+
+
 ;===========================================================================
 ;===========================================================================
 ; Subroutine that returns R7 and  R8 containing 1 or 0. 
