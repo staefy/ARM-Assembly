@@ -59,7 +59,7 @@
         PUBWEAK ADC_Handler
         PUBWEAK DMAC_Handler
         PUBWEAK UDPHS_Handler
-        
+	
         SECTION .text : CODE (2)
         THUMB
         
@@ -137,6 +137,7 @@ SMC_Handler
         
 PIOA_Handler
         NOP
+	;DO THINGS
         B       PIOA_Handler
         
 PIOB_Handler
@@ -210,5 +211,6 @@ DMAC_Handler
 UDPHS_Handler
         NOP
         B       UDPHS_Handler
+	
         
         END

@@ -17,6 +17,7 @@
       <file>$PROJ_DIR$\Debug\Obj\sam3u_ek_init.o</file>
       <file>$PROJ_DIR$\..\..\..\..\..\..\[ROOT_NODE]</file>
       <file>$TOOLKIT_DIR$\config\linker\Atmel\SAM3U\SAM3U-EK\sam3u4-sram.icf</file>
+      <file>$PROJ_DIR$\vector_table.inc</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\exceptions.s</name>
@@ -53,6 +54,12 @@
           <file> 6</file>
         </tool>
       </outputs>
+      <inputs>
+        <tool>
+          <name>AARM</name>
+          <file> 11</file>
+        </tool>
+      </inputs>
     </file>
     <file>
       <name>$PROJ_DIR$\Debug\Exe\asm.out</name>

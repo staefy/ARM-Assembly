@@ -21,6 +21,7 @@
         
       PUBLIC  main
 	  PUBLIC  Systick_Handler
+	  PUBLIC PIOA_Handler
         
       SECTION .text : CODE (2)
       THUMB
@@ -36,6 +37,9 @@ PIOA_IMR  EQU   0X400E0C48        ; Interrupt Mask register
 PIOA_ISR  EQU   0X400E0C4C        ; Interrupt Status Register
 PIOA_PUER EQU   0X400E0C64
 PIOA_PDSR EQU   0X400E0C3C
+PIOA_AIMER EQU   0X400E0CB0	; Additional interrupt modes enable
+PIOA_ESR EQU   0X400E0CC0	; Edge selct register
+PIOA_FELLSR EQU   0X400E0CD0	; falling edge (or low level) select reg
 ; Port B Registers ------------------------------------        
 PIOB_PER  EQU   0X400E0E00
 PIOB_OER  EQU   0X400E0E10
@@ -80,13 +84,44 @@ main     LDR   R0,=PMC_PCER
 	STR	R1, [R0]
 	
 	LDR	R0, =PIOB_OWER
-	STR	R1, [R0]
+	MOV	R1, #4
+	STR	R1, [R0]		;Enabling sync write on pin 2
 
 
 ;===========================================================================
 ; Initialization InPort (PIOA)
-; TODO: Write your code here
-; TODO: Set up so that input is generating interrupt
+	MOV	R1, #0XC0000		;We use both buttons, pin 18 19
+	LDR	R0, =PIOA_PER		;Pio enable
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOA_ODR		;Outpud disable
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOA_PUER		;Pullup enable
+	STR	R1, [R0]
+	
+; Set up so that input is generating interrupt
+	MOV	R1, #0x40000
+	LDR	R0, =PIOA_IER		;Interrupt enable register
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOA_AIMER		; Additional int. mode enable register
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOA_ESR		;Edge select register
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOA_FELLSR	;Falling/Low edge/level select register
+	STR	R1, [R0]
+	
+
+	MOV	R1, #0x400		;NVIC number
+	LDR	R0, =CLRPEND0		;Clear if any pending interrupts
+	STR	R1, [R0]
+
+	LDR	R0, =SETENA0		; Enabling NVIC interrupt
+	STR	R1, [R0]	
+
                                                    
 ;===========================================================================
 ; Configure SysTick Timer
@@ -118,6 +153,7 @@ STOP    B       STOP
 ; Purpose:           Interupt handler for Systick timer
 ; Initial Condition: Systick needs to be initiated correctly
 ; Registers changed: None
+
 Systick_Handler
         ; TODO: Write your code here
 	LDR	R0, =PIOB_ODSR
@@ -127,5 +163,19 @@ Systick_Handler
         BX    LR                    ; Return interrupt
         B Systick_Handler
 
-		
+; ========================
+; PIOA_Handler - Interrupt handler for button press
+; Purpose:           Interupt handler for left button
+; Initial Condition: PIOA interrupt onfalling flank myst be on
+; Registers changed: 
+
+PIOA_Handler
+        ; TODO: Write your code here
+	LDR	R0, =PIOB_SODR
+	MOV	R1, #3
+	STR	R1, [R0]
+        BX    LR                    ; Return interrupt
+        B PIOA_Handler
+; ========================
+			
         END

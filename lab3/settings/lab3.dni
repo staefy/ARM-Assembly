@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1743093628
+Checksum=1468997534
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -46,7 +46,8 @@ CStepIntDis=_ 0
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Count=0
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\exceptions.s}.71.1" 0 0 1 "" 0 "" 0
+Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
