@@ -43,6 +43,7 @@ PIOB_SODR EQU   0X400E0E30
 PIOB_PUDR EQU   0X400E0E60
 PIOB_CODR EQU   0X400E0E34
 PIOB_ODSR EQU   0x400E0E38
+PIOB_OWER EQU   0x400E0EA0	;Synced Output write enable register
 
 ; NVIC Registers ---------------------------------------
 SETENA0   EQU   0xE000E100        ; Interrupt Set Enable Register 0
@@ -67,7 +68,20 @@ main     LDR   R0,=PMC_PCER
          
 ;===========================================================================
 ; Initialization OutPort (PIOB)
-; TODO: Write your code here
+
+	LDR	R0, =PIOB_PER
+	MOV	R1, #7
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOB_OER
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOB_PUDR
+	STR	R1, [R0]
+	
+	LDR	R0, =PIOB_OWER
+	STR	R1, [R0]
+
 
 ;===========================================================================
 ; Initialization InPort (PIOA)
@@ -76,9 +90,21 @@ main     LDR   R0,=PMC_PCER
                                                    
 ;===========================================================================
 ; Configure SysTick Timer
-; TODO: Write your code here
 
+	LDR	R3, =CTRL
+	MOV	R1, #0
+	STR	R1, [R3]	; Disable the timer for now
+	
+	LDR	R0, =LOAD
+	LDR	R1, =3000000	; 48M / 8 = 6M
+	STR	R1, [R0]	; Counter starting value, should be 1hz init
+	
+	LDR	R0, =VAL
+	MOV	R1, #0		
+	STR	R1, [R0]	;Reset current value (any write value works)
                              
+	MOV	R1, #3		;Set first 3 bits to (011)
+	STR	R1, [R3]	;Start timer!
 ;===========================================================================
 ; Core of your program
 ; TODO: Write your code here
@@ -94,6 +120,10 @@ STOP    B       STOP
 ; Registers changed: None
 Systick_Handler
         ; TODO: Write your code here
+	LDR	R0, =PIOB_ODSR
+	LDR	R1, [R0]
+	EOR	R1, R1, #4	;Inverting bit 2 (red led)
+	STR	R1, [R0]		;Sync write
         BX    LR                    ; Return interrupt
         B Systick_Handler
 
