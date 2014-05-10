@@ -33,25 +33,25 @@ Stop=1
 Freq=10000000
 MultiCoreRunAll=1
 [DebugChecksum]
-Checksum=-1618862911
-[Exceptions]
-StopOnUncaught=_ 0
-StopOnThrow=_ 0
-[CallStack]
-ShowArgs=0
-[Disassembly]
-MixedMode=1
-[JLinkDriver]
-CStepIntDis=_ 0
+Checksum=-1356605942
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
 [CallStackLog]
 Enabled=0
+[JLinkDriver]
+CStepIntDis=_ 0
 [DriverProfiling]
 Enabled=0
 Mode=0
