@@ -84,7 +84,7 @@ main     LDR   R0,=PMC_PCER
 	STR	R1, [R0]
 	
 	LDR	R0, =PIOB_OWER
-	MOV	R1, #4
+	MOV	R1, #7
 	STR	R1, [R0]		;Enabling sync write on pin 2
 
 
@@ -115,10 +115,11 @@ main     LDR   R0,=PMC_PCER
 	STR	R1, [R0]
 	
 
-	MOV	R1, #0x400		;NVIC number
+	MOV	R1, #0xFFFFFFFF		;NVIC number
 	LDR	R0, =CLRPEND0		;Clear if any pending interrupts
 	STR	R1, [R0]
-
+	
+	MOV	R1, #0x400
 	LDR	R0, =SETENA0		; Enabling NVIC interrupt
 	STR	R1, [R0]	
 
@@ -148,23 +149,46 @@ main_loop
 	LDR	R2, [R1]
 	AND	R2, R2, #0x80000
 	EOR	R2, R2, #0x80000	;Invert bits for friendly format
-	CMP	R2, #0x0		
+	MOV	R7, #100	;ms delay
+	CMP	R2, #0x0
 	BEQ	delay			;Zero means not pressed
-	
-	
-	
+	BL	countup
+
+delay	BL	Delay_ms	
 	
 	B       main_loop
+;===========================================================================
+;Subroutine to do a delay of certain milliseconds takes R7 with ms
+
+MCLK	  EQU	48000          ; Anges i kHz
+DELAY_CALIB  EQU  MCLK / 9      ; Value that generates one ms delay 
+                                ; (depend on MCLK at 48MHz)
+Delay_ms
+        STMFD   SP!,{R0,R1}     ; Save registers
+        MOV     R0,R7        
+
+do_delay_ms
+        LDR     R1,=DELAY_CALIB ; Read right constant for one ms
+loop_ms
+        SUBS    R1,R1,#1        
+        BNE     loop_ms         ; loop for one ms
+                 
+        SUBS    R0,R0,#1	
+        BNE     do_delay_ms     ; loop for right number of ms
+        
+	LDMFD   SP!,{R0,R1}     ; Restore registers 
+        MOV     PC,LR           ; Return   
+
 
 ;Subroutine to handle counting and lighting of green ones
 countup
-	LDR	R0, =CLRENA0		; DISABLING NVIC interrupt
-	STR	R1, [R0]
+	PUSH	{R0-R3,LR}
+	;LDR	R0, =CLRENA0		; DISABLING NVIC interrupt
+	;STR	R1, [R0]
 	
-	PUSH	{R0-R3, LR}
 	LDR	R1, =PIOB_ODSR
 	LDR	R0, [R1]
-	AND	R0, R0, #3
+	AND	R0, R0, #7
 	EOR	R0, R0, #3
 	ADD	R0, R0, #1
 	CMP	R0, #4
@@ -175,9 +199,9 @@ no_reset
 	LDR	R1, =PIOB_ODSR
 	STR	R0, [R1]
 	
-	MOV	R1, #0x400
-	LDR	R0, =SETENA0		; Enabling NVIC interrupt again
-	STR	R1, [R0]
+	;MOV	R1, #0x400
+	;LDR	R0, =SETENA0		; Enabling NVIC interrupt again
+	;STR	R1, [R0]
 	
 	POP	{R0-R3, LR}
 	BX 	LR
@@ -194,8 +218,8 @@ Systick_Handler
 	LDR	R0, =PIOB_ODSR
 	LDR	R1, [R0]
 	EOR	R1, R1, #4	;Inverting bit 2 (red led)
-	STR	R1, [R0]		;Sync write
-        BX    LR                    ; Return interrupt
+	STR	R1, [R0]		;Sync write 
+       	BX    LR                    ; Return interrupt
 
 ; ========================
 ; PIOA_Handler - Interrupt handler for button press
@@ -214,10 +238,6 @@ btn_loop
 	CMP	R2, #0x0		;Check if buttons are unpressed yet
 	BNE	btn_loop
 
-	MOV	R1, #0x400		
-	LDR	R2, =CLRPEND0	;Clear if any pending interrupts
-	STR	R1, [R2]
-
 	AND	R0, R0, #0x80000
 	CMP	R0, #0
 	BEQ	both		;If its zero then both are pressed
@@ -225,7 +245,7 @@ btn_loop
 left_only			;Update frequency with value in counter!
 	LDR	R0, =PIOB_ODSR
 	LDR	R1, [R0]
-	MOV	R0, #3
+	MOV	R0, #7
 	AND	R1, R0, R1 	;Now we should have only the binary value left
 	EOR	R1, R1, R0
 	LDR	R0, =LOAD	;Get counter load adress for use in switch
@@ -246,7 +266,7 @@ both				;If both then we reset everything
 	LDR	R0, =LOAD		
 	LDR	R1, =3000000
 	STR	R1, [R0]	;Load 1Hz red light blink freq
-        BX    LR                    ; Return interrupt
+	BX	LR                 ; Return interrupt
 ; ========================
 		
 	 DATA 

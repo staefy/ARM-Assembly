@@ -17,6 +17,7 @@
       <file>$PROJ_DIR$\Debug\Obj\sam3u_ek_init.o</file>
       <file>$PROJ_DIR$\..\..\..\..\..\..\[ROOT_NODE]</file>
       <file>$TOOLKIT_DIR$\config\linker\Atmel\SAM3U\SAM3U-EK\sam3u4-sram.icf</file>
+      <file>$PROJ_DIR$\..\Lab2\asm.s</file>
       <file>$PROJ_DIR$\vector_table.inc</file>
     </outputs>
     <file>
@@ -57,7 +58,7 @@
       <inputs>
         <tool>
           <name>AARM</name>
-          <file> 11</file>
+          <file> 12</file>
         </tool>
       </inputs>
     </file>
