@@ -142,10 +142,46 @@ main     LDR   R0,=PMC_PCER
 	STR	R1, [R3]	;Start timer!
 ;===========================================================================
 ; Core of your program
-; TODO: Write your code here
 
-STOP    B       STOP
- 
+main_loop
+	LDR	R1, =PIOA_PDSR
+	LDR	R2, [R1]
+	AND	R2, R2, #0x80000
+	EOR	R2, R2, #0x80000	;Invert bits for friendly format
+	CMP	R2, #0x0		
+	BEQ	delay			;Zero means not pressed
+	
+	
+	
+	
+	B       main_loop
+
+;Subroutine to handle counting and lighting of green ones
+countup
+	LDR	R0, =CLRENA0		; DISABLING NVIC interrupt
+	STR	R1, [R0]
+	
+	PUSH	{R0-R3, LR}
+	LDR	R1, =PIOB_ODSR
+	LDR	R0, [R1]
+	AND	R0, R0, #3
+	EOR	R0, R0, #3
+	ADD	R0, R0, #1
+	CMP	R0, #4
+	BNE	no_reset
+	MOV	R0, #0
+no_reset
+	EOR	R0, R0, #3
+	LDR	R1, =PIOB_ODSR
+	STR	R0, [R1]
+	
+	MOV	R1, #0x400
+	LDR	R0, =SETENA0		; Enabling NVIC interrupt again
+	STR	R1, [R0]
+	
+	POP	{R0-R3, LR}
+	BX 	LR
+
 
 ; ========================
 ; Systick_Handler - Interrupt handler for Systick
@@ -155,13 +191,11 @@ STOP    B       STOP
 ; Registers changed: None
 
 Systick_Handler
-        ; TODO: Write your code here
 	LDR	R0, =PIOB_ODSR
 	LDR	R1, [R0]
 	EOR	R1, R1, #4	;Inverting bit 2 (red led)
 	STR	R1, [R0]		;Sync write
         BX    LR                    ; Return interrupt
-        B Systick_Handler
 
 ; ========================
 ; PIOA_Handler - Interrupt handler for button press
@@ -170,12 +204,87 @@ Systick_Handler
 ; Registers changed: 
 
 PIOA_Handler
-        ; TODO: Write your code here
+	MOV	R0, #0xC0000		;Flag register to show wich buttons
+btn_loop
+	LDR	R1, =PIOA_PDSR
+	LDR	R2, [R1]
+	AND	R2, R2, #0xC0000
+	EOR	R2, R2, #0xC0000	;Invert bits
+	BIC	R0, R0, R2		;Update our own flag register
+	CMP	R2, #0x0		;Check if buttons are unpressed yet
+	BNE	btn_loop
+
+	MOV	R1, #0x400		
+	LDR	R2, =CLRPEND0	;Clear if any pending interrupts
+	STR	R1, [R2]
+
+	AND	R0, R0, #0x80000
+	CMP	R0, #0
+	BEQ	both		;If its zero then both are pressed
+	
+left_only			;Update frequency with value in counter!
+	LDR	R0, =PIOB_ODSR
+	LDR	R1, [R0]
+	MOV	R0, #3
+	AND	R1, R0, R1 	;Now we should have only the binary value left
+	EOR	R1, R1, R0
+	LDR	R0, =LOAD	;Get counter load adress for use in switch
+	
+	;Table structure for translating binary 0-3 into freq			
+	LDR R2, =TABLE
+	MOV R1, R1, LSL #2 
+	LDR R2, [R2,R1] 	;Load the value from table at R2 offset by R3
+	STR	R2, [R0]	;Set reload for counter
+	BX	LR
+
+
+both				;If both then we reset everything
 	LDR	R0, =PIOB_SODR
 	MOV	R1, #3
-	STR	R1, [R0]
+	STR	R1,[R0]		;Clear green leds
+	
+	LDR	R0, =LOAD		
+	LDR	R1, =3000000
+	STR	R1, [R0]	;Load 1Hz red light blink freq
         BX    LR                    ; Return interrupt
-        B PIOA_Handler
 ; ========================
-			
+		
+	 DATA 
+
+TABLE	DCD	6000000, 3000000, 1500000, 750000
+	
         END
+
+
+
+
+
+
+//;========================= MIGHT BE UNNECESSARY=================
+//
+//	TBB.W	[PC, R1]	; PC = table start and R0 is the index of the
+//branchtable
+//	DATA
+//;.. table ERGO the CASE 0 or 1 or 2 etc.
+//	DCB	((case0 - branchtable)/2)	;Adresses to cases shifted right
+//	DCB	((case1 - branchtable)/2)
+//	DCB	((case2 - branchtable)/2)
+//	DCB	((case3 - branchtable)/2)
+//	
+//case0		;If R0 is zero we set to 0.5 hz
+//	LDR	R1, =6000000
+//	STR	R1, [R0]
+//	BX	LR
+//case1		;If R0 is one we set to 1 hz
+//	LDR	R1, =3000000
+//	STR	R1, [R0]
+//	BX	LR
+//case2		;If R0 is two we set to 2 hz
+//	LDR	R1, =1500000
+//	STR	R1, [R0]
+//	BX	LR
+//case3		;If R0 is three we set to 4 hz
+//	LDR	R1, =750000
+//	STR	R1, [R0]
+//	BX	LR
+//;======================= ????? ==================================
